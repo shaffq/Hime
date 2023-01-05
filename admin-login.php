@@ -1,0 +1,121 @@
+<?php include('server.php');
+
+if (isset($_SESSION["Admin"])) {
+    header("location: admin.php");
+} else {
+}
+
+if (isset($_POST["login"])) {
+    $username = test_input($_POST["username"]);
+    $password = test_input($_POST["password"]);
+
+    $sql = "SELECT * FROM admin WHERE username = '$username' AND password = '$password'";
+    $result = $conn->query($sql);
+    if ($result->num_rows == 1) {
+        $_SESSION["Admin"] = $username;
+        header("location: admin.php");
+    } else {
+        $_SESSION["errorMsg"] = "Error";
+    }
+}
+
+if (isset($_SESSION["errorMsg"])) {
+    $errorMsg = $_SESSION["errorMsg"];
+    unset($_SESSION["errorMsg"]);
+} else {
+    $errorMsg = "";
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="node_modules/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.min.js" integrity="sha384-ODmDIVzN+pFdexxHEHFBQH3/9/vQ9uori45z4JjnFsRydbmQbmL5t1tQ0culUzyK" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
+
+        body {
+            font-family: "Poppins", sans-serif;
+        }
+
+        .row {
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="loader">
+        <?php
+        include "loader/loader.php";
+        ?>
+    </div>
+
+    <div class="bodyActual" hidden>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col p-0 d-flex justify-content-center align-items-center">
+                    <img src="img/login.png" class="img-fluid" alt="" style="width:100%; height:100%; object-fit:cover; border-radius: 0px 30px 30px 0px;">
+                </div>
+                <div class="col">
+                    <div class="row">
+                        <div class="col-3">
+                            <a href="index.php">
+                                <img src="sidebar/img/fullLogoBlack.png" style="max-width: 50%;margin-left: 20px; margin-top: 20px;">
+                            </a>
+                        </div>
+                        <div class="col mx-auto my-auto">
+                            <main>
+                                <form method="post">
+
+                                    <div class="my-4">
+                                        <h1 class="fw-bold">Hime<span class="text-primary"> Admin</span></h1>
+                                    </div>
+
+
+                                    <?php if ($errorMsg == "Error") {
+                                        echo '<div class="alert alert-danger" role="alert">
+                                    <i class="bi bi-exclamation-circle-fill"></i>&nbsp&nbsp&nbsp&nbspIncorrect username or password
+                                  </div>';
+                                    } else {
+                                    } ?>
+
+
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" name="username" id="username" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">Password</label>
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+
+                                    <div class="my-4">
+                                        <button class="btn btn-primary w-100" type="submit" name="login">Login</button>
+                                    </div>
+                                </form>
+                            </main>
+                        </div>
+                        <div class="col-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="loader/loader.js"></script>
+
+</body>
+
+</html>

@@ -3,14 +3,30 @@
 if (isset($_SESSION["Username"])) {
     $username = $_SESSION["Username"];
     if ($_SESSION["Usertype"] == 1) {
+        $sql = "SELECT first_name FROM freelancer WHERE username='$username'";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $profile_name = $row["first_name"];
+            }
+        }
         $textSearch = "Find Job";
         $linkSearch = "pages-searchJob.php";
         $linkDashboard = "dashboard-freelancer.php";
+        $linkProfile = "pages-profileFreelancer.php";
         $postJob = "hidden";
     } else {
+        $sql = "SELECT first_name FROM client WHERE username='$username'";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $profile_name = $row["first_name"];
+            }
+        }
         $textSearch = "Find Freelancer";
         $linkSearch = "pages-searchFreelancer.php";
         $linkDashboard = "dashboard-client.php";
+        $linkProfile = "pages-profileClient.php";
         $postJob = "";
     }
 } else {
@@ -27,14 +43,64 @@ if (isset($_SESSION["job_id"])) {
     $job_id = "";
 }
 
-if (isset($_POST["application_id"])) {
-    $_SESSION["application_id"] = $_POST["application_id"];
+if (isset($_POST["review"])) {
+    $application_id = test_input($_POST["application_id"]);
+    $_SESSION["application_id"] = $application_id;
     header("location: pages-payment.php");
+}
+
+if (isset($_POST["reject"])) {
+    $application_id = test_input($_POST["application_id"]);
+
+    $sql = "DELETE FROM job_application WHERE application_id='$application_id'";
+    $result = $conn->query($sql);
+
+    if ($result == true) {
+        header("location: pages-jobDetailsClient.php");
+    }
 }
 
 if (isset($_POST["view"])) {
     $_SESSION["job_id"] = $job_id;
     header("location: pages-jobDetails.php");
+}
+
+if (isset($_POST["update"])) {
+
+    $job_id = test_input($_POST["job_id"]);
+    $visiblility = test_input($_POST["visiblility"]);
+
+    if ($_POST["visiblility"] == "") {
+        $visiblility = "invisible";
+    }
+
+    $sql = "UPDATE job SET job_status='$visiblility' WHERE job_id='$job_id'";
+    $result = $conn->query($sql);
+
+    if ($result == true) {
+        header("location: pages-jobDetailsClient.php");
+    }
+}
+
+if (isset($_POST["delete"])) {
+    $job_id = test_input($_POST["job_id"]);
+
+    $sql = "SELECT * FROM job_application WHERE job_id='$job_id'";
+    $result = $conn->query($sql);
+    if ($result->num_rows > 0) {
+        $sql = "DELETE job_application, job FROM job_application INNER JOIN job WHERE job_application.job_id= job.job_id and job_application.job_id = '$job_id'";
+        $result = $conn->query($sql);
+
+        if ($result == true) {
+            header("location: dashboard-client.php");
+        }
+    } else {
+        $sql = "DELETE FROM job WHERE job_id='$job_id'";
+        $result = $conn->query($sql);
+        if ($result == true) {
+            header("location: dashboard-client.php");
+        }
+    }
 }
 
 $sql = "SELECT * FROM job JOIN client ON job.c_username=client.username WHERE job_id='$job_id'";
@@ -112,7 +178,7 @@ if ($result2->num_rows > 0) {
 <body>
     <?php
     include "sidebar/sidebar.php";
-    himeSidebar($linkDashboard, $linkSearch, $textSearch, $postJob)
+    himeSidebar($linkDashboard, $linkSearch, $linkProfile, $textSearch, $postJob, $profile_name);
     ?>
 
     <main class="my-4">
@@ -129,18 +195,18 @@ if ($result2->num_rows > 0) {
                     </div>
                     <div class="card mt-3 py-2 border-0">
                         <div class="card-body">
-                            <div class="row mx-auto">
+                            <div class="row d-flex justify-content-center align-items-center">
                                 <div class="col-auto d-flex justify-content-start align-items-center">
-                                    <button type="button" class="btn btn-primary btn-circle mx-2"><i class="fa-solid fa-pen"></i></button><span class="mx-4 fw-semibold text-primary">Offer</span><i class="fa-solid fa-chevron-right mx-4"></i>
+                                    <button type="button" class="btn btn-primary btn-circle mx-1"><i class="fa-solid fa-pen"></i></button><span class="mx-2 fw-semibold text-primary">Offer</span><i class="fa-solid fa-chevron-right mx-4"></i>
                                 </div>
                                 <div class="col-auto d-flex justify-content-start align-items-center">
-                                    <button type="button" class="btn btn-outline-secondary btn-circle mx-2"><i class="fa-solid fa-wallet"></i></button><span class="mx-4 text-secondary">Confirmation & Deposit</span><i class="fa-solid fa-chevron-right mx-4"></i>
+                                    <button type="button" class="btn btn-outline-secondary btn-circle mx-1"><i class="fa-solid fa-wallet"></i></button><span class="mx-2 text-secondary">Confirmation & Deposit</span><i class="fa-solid fa-chevron-right mx-4"></i>
                                 </div>
                                 <div class="col-auto d-flex justify-content-start align-items-center">
-                                    <button type="button" class="btn btn-outline-secondary btn-circle mx-2"><i class="fa-solid fa-hourglass-half"></i></button><span class="mx-4 text-secondary">In progress</span><i class="fa-solid fa-chevron-right mx-4"></i>
+                                    <button type="button" class="btn btn-outline-secondary btn-circle mx-1"><i class="fa-solid fa-hourglass-half"></i></button><span class="mx-2 text-secondary">In progress</span><i class="fa-solid fa-chevron-right mx-4"></i>
                                 </div>
                                 <div class="col-auto d-flex justify-content-start align-items-center">
-                                    <button type="button" class="btn btn-outline-secondary btn-circle mx-2"><i class="fa-solid fa-star"></i></button><span class="mx-4 text-secondary">Review</span>
+                                    <button type="button" class="btn btn-outline-secondary btn-circle mx-1"><i class="fa-solid fa-star"></i></button><span class="mx-2 text-secondary">Review</span>
                                 </div>
                             </div>
                         </div>
@@ -181,13 +247,13 @@ if ($result2->num_rows > 0) {
                                             <div class="col my-auto">
                                                 RM ' . $bid[$i] . '
                                             </div>
-                                            <div class="col-auto my-auto ">
-                                                <button type="submit" class="btn btn-primary px-5">Review</button>
-                                                <button type="button" class="btn btn-outline-primary px-4">Message</button>
-                                                <button type="button" class="btn"><i class="fa-solid fa-xmark fa-xl"></i></i></button>
+                                            <div class="col-auto my-auto">
+                                                <button type="button" class="btn btn-light px-4" onClick="window.open(`message/login.php`);">Message</button>
+                                                <button type="submit" class="btn btn-primary px-5" name="review">Review</button>                                              
+                                                <button type="submit" class="btn btn-danger" name="reject"><i class="fa-solid fa-xmark fa-xl"></i></button>
                                             </div>
                                         </div>                              
-                                    </form>
+                                    </form> 
                                     ';
                                     }
                                 } else {
@@ -200,6 +266,19 @@ if ($result2->num_rows > 0) {
                 </div>
 
                 <div class="col-3">
+                    <form action="pages-jobDetailsClient.php" method="post">
+                        <div class="row mb-3 text-end">
+                            <div class="col p-0">
+                                <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#settingModal"><i class="fa-solid fa-ellipsis"></i></button>
+                            </div>
+                            <div class="col-auto ps-1 pe-1">
+                                <button type="submit" id="view" name="view" class="btn btn-primary"><i class="fa-solid fa-eye me-2"></i>View</button>
+                            </div>
+                            <div class="col-auto ps-0">
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa-solid fa-trash me-2"></i>Delete</button>
+                            </div>
+                        </div>
+                    </form>
                     <div class="card border-0 p-4 mb-3">
                         <div class="card-body">
                             <div class="row">
@@ -210,7 +289,11 @@ if ($result2->num_rows > 0) {
                                     Status
                                 </div>
                                 <div class="col d-flex justify-content-end align-items-center">
-                                    <button type="button" class="btn btn-success btn-sm rounded-pill text-white my-2 px-4"><i class="fa-regular fa-circle-dot me-2"></i>Hiring</button>
+                                    <?php if ($job_status == 'available') {
+                                        echo '<button type="button" class="btn btn-success btn-sm rounded-pill text-white my-2 px-4"><i class="fa-regular fa-circle-dot me-2"></i>Hiring</button>';
+                                    } elseif ($job_status == 'invisible') {
+                                        echo '<button type="button" class="btn btn-secondary btn-sm rounded-pill text-white my-2 px-4"><i class="fa-regular fa-circle-dot me-2"></i>Invisible</button>';
+                                    } ?>
                                 </div>
                             </div>
                             <div class="row mt-2">
@@ -239,24 +322,53 @@ if ($result2->num_rows > 0) {
     </main>
 </body>
 
-<div class="modal fade" id="jobVisibility" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="settingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0">
+            <form method="post">
+                <input type="hidden" name="job_id" value="<?php echo $job_id; ?>">
+                <input type="hidden" name="f_username" value="<?php echo $username; ?>">
+                <div class="modal-header border-0 mx-3 my-2">
+                    <h5 class="modal-title border-0" id="applyModalLabel">Setting</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body mx-3">
+                    <h5 class="mb-3">Job Visibility</h5>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" name="visiblility" id="visiblility" value="available" <?php if ($job_status == "available") {
+                                                                                                                                                echo 'checked';
+                                                                                                                                            } elseif ($job_status == "invisible") {
+                                                                                                                                                echo '';
+                                                                                                                                            } ?>>
+                        <label class="form-check-label" for="flexSwitchCheckChecked">Visible</label>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 mx-3 mb-3">
+                    <button type="submit" class="btn btn-primary py-2 px-3 w-100" name="update" id="update">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0">
             <form method="post">
                 <input type="hidden" name="job_id" value="<?php echo $job_id; ?>">
                 <input type="hidden" name="f_username" value="<?php echo $username; ?>">
                 <div class="modal-header border-0 mx-3 my-2">
-                    <h5 class="modal-title border-0" id="applyModalLabel">Job Visibility</h5>
+                    <h5 class="modal-title border-0" id="applyModalLabel">Delete Job</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body mx-3">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked>
-                        <label class="form-check-label" for="flexSwitchCheckChecked">Checked switch checkbox input</label>
-                    </div>
+                    <p>Are you sure you want to delete this job?</p>
                 </div>
+
                 <div class="modal-footer border-0 mx-3 mb-3">
-                    <button type="submit" class="btn btn-primary py-2 px-3 w-100" name="apply_job">Send Proposal</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" name="delete" id="delete">Yes</button>
                 </div>
             </form>
         </div>

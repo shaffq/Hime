@@ -122,7 +122,7 @@ if ($result->num_rows > 0) {
 
                                                 </div>
                                             </div>
-                                            <div class="col-12">
+                                            <!-- <div class="col-12">
                                                 <div class="row my-4">
                                                     <div class="col-3 d-flex justify-content-center align-items-center">
                                                         <img class="img-fluid rounded-circle" src="sidebar/img/face-1.png" alt="">
@@ -135,7 +135,7 @@ if ($result->num_rows > 0) {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="col-12">
                                                 <div class="row">
                                                     <div class="col">

@@ -3,22 +3,34 @@
 if (isset($_SESSION["Username"])) {
     $username = $_SESSION["Username"];
     if ($_SESSION["Usertype"] == 1) {
+        $sql = "SELECT first_name FROM freelancer WHERE username='$username'";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $profile_name = $row["first_name"];
+            }
+        }
         $textSearch = "Find Job";
         $linkSearch = "pages-searchJob.php";
         $linkDashboard = "dashboard-freelancer.php";
+        $linkProfile = "pages-profileFreelancer.php";
         $postJob = "hidden";
     } else {
+        $sql = "SELECT first_name FROM client WHERE username='$username'";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $profile_name = $row["first_name"];
+            }
+        }
         $textSearch = "Find Freelancer";
         $linkSearch = "pages-searchFreelancer.php";
         $linkDashboard = "dashboard-client.php";
+        $linkProfile = "pages-profileClient.php";
         $postJob = "";
     }
 } else {
-    $username = "";
-    $textSearch = "";
-    $linkSearch = "";
-    $linkDashboard = "";
-    $postJob = "";
+    header("location: index.php");
 }
 
 $session_id = $_GET['session_id'];
@@ -67,7 +79,7 @@ if ($intent->status == 'succeeded') {
     $result6 = $conn->query($sql6);
 
     $sql7 = "UPDATE job SET budget=$bid WHERE job_id='$job_id'";
-    $result6 = $conn->query($sql6);
+    $result7 = $conn->query($sql7);
 
 } else {
 }
@@ -142,7 +154,7 @@ if ($intent->status == 'succeeded') {
 <body>
     <?php
     include "sidebar/sidebar.php";
-    himeSidebar($linkDashboard, $linkSearch, $textSearch, $postJob)
+    himeSidebar($linkDashboard, $linkSearch, $linkProfile, $textSearch, $postJob, $profile_name);
     ?>
 
     <main>

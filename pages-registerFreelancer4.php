@@ -144,11 +144,11 @@ if (isset($_SESSION["Username"])) {
                                                 </div>
                                             </div>
                                             <div class="col-12 border-bottom mb-3"></div>
-                                            <h5>Resume</h5>
+                                            <!-- <h5>Resume</h5>
                                             <div class="col-12 mb-3">
                                                 <label for="resume" class="form-label">Upload your resume to be displayed on your profile</label>
                                                 <input class="form-control" type="file" id="resume" name="resume">
-                                            </div>
+                                            </div> -->
                                             <div class="col-4"></div>
                                             <div class="col-4"><a href="pages-registerFreelancer3.php" class="btn btn-secondary w-100" role="button">Back</a></div>
                                             <div class="col-4"><button class="w-100 btn btn-primary" type="submit" name="next3">Done</button></div>

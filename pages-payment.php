@@ -3,22 +3,23 @@
 if (isset($_SESSION["Username"])) {
     $username = $_SESSION["Username"];
     if ($_SESSION["Usertype"] == 1) {
-        $textSearch = "Find Job";
-        $linkSearch = "pages-searchJob.php";
-        $linkDashboard = "dashboard-freelancer.php";
-        $postJob = "hidden";
+        header("location: index.php");
     } else {
+        $sql = "SELECT first_name FROM client WHERE username='$username'";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $profile_name = $row["first_name"];
+            }
+        }
         $textSearch = "Find Freelancer";
         $linkSearch = "pages-searchFreelancer.php";
         $linkDashboard = "dashboard-client.php";
+        $linkProfile = "pages-profileCLient.php";
         $postJob = "";
     }
 } else {
-    $username = "";
-    $textSearch = "";
-    $linkSearch = "";
-    $linkDashboard = "";
-    $postJob = "";
+    header("location: index.php");
 }
 
 if (isset($_SESSION["application_id"])) {
@@ -88,7 +89,7 @@ if ($budget_type == "Hourly") {
 <body>
     <?php
     include "sidebar/sidebar.php";
-    himeSidebar($linkDashboard, $linkSearch, $textSearch, $postJob)
+    himeSidebar($linkDashboard, $linkSearch, $linkProfile, $textSearch, $postJob, $profile_name);
     ?>
 
     <main>

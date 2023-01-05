@@ -136,7 +136,7 @@ if ($result->num_rows > 0) {
                                                 <h1 class="fw-bold">Set up you<span class="text-primary"> Hime </span> profile</h1>
                                                 <h5 class="text-secondary">Please provide a summary of your profile</h5>
                                             </div>
-                                            <div class="col-12">
+                                            <!-- <div class="col-12">
                                                 <div class="row my-4">
                                                     <div class="col-3 d-flex justify-content-center align-items-center">
                                                         <img class="img-fluid rounded-circle" src="sidebar/img/face-1.png" alt="">
@@ -149,16 +149,16 @@ if ($result->num_rows > 0) {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="col-12">
                                                 <div class="row">
                                                     <div class="col">
                                                         <label for="first_name" class="form-label">First Name</label>
-                                                        <input type="text" class="form-control" name="first_name" id="first_name" value="<?php echo $first_name; ?>">
+                                                        <input type="text" class="form-control" name="first_name" id="first_name" value="<?php echo $first_name; ?>" disabled>
                                                     </div>
                                                     <div class="col">
                                                         <label for="last_name" class="form-label">Last Name</label>
-                                                        <input type="text" class="form-control" name="last_name" id="last_name" value="<?php echo $last_name; ?>">
+                                                        <input type="text" class="form-control" name="last_name" id="last_name" value="<?php echo $last_name; ?>" disabled>
                                                     </div>
                                                 </div>
                                             </div>

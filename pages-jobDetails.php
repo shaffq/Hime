@@ -3,31 +3,43 @@
 if (isset($_SESSION["Username"])) {
     $username = $_SESSION["Username"];
     if ($_SESSION["Usertype"] == 1) {
+        $sql = "SELECT first_name FROM freelancer WHERE username='$username'";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $profile_name = $row["first_name"];
+            }
+        }
         $textSearch = "Find Job";
         $linkSearch = "pages-searchJob.php";
         $linkDashboard = "dashboard-freelancer.php";
+        $linkProfile = "pages-profileFreelancer.php";
         $postJob = "hidden";
         $btn = "";
     } else {
+        $sql = "SELECT first_name FROM client WHERE username='$username'";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $profile_name = $row["first_name"];
+            }
+        }
         $textSearch = "Find Freelancer";
         $linkSearch = "pages-searchFreelancer.php";
         $linkDashboard = "dashboard-client.php";
+        $linkProfile = "pages-profileClient.php";
         $postJob = "";
         $btn = "hidden";
     }
 } else {
     $username = "";
-    $textSearch = "";
-    $linkSearch = "";
-    $linkDashboard = "";
-    $postJob = "";
     $btn = "hidden";
 }
 
 if (isset($_SESSION["job_id"])) {
     $job_id = $_SESSION["job_id"];
 } else {
-    $job_id = "";
+    $job_id = $_GET['job_id'];
 }
 
 $sql = "SELECT * FROM job JOIN client ON job.c_username=client.username WHERE job_id='$job_id'";
@@ -59,6 +71,7 @@ if ($result->num_rows > 0) {
 } else {
 }
 
+$application_status = "";
 $sql2 = "SELECT * FROM job_application WHERE job_id='$job_id' AND f_username='$username'";
 $result2 = $conn->query($sql2);
 if ($result2->num_rows > 0) {
@@ -69,14 +82,14 @@ if ($result2->num_rows > 0) {
         $btnApply = "disabled";
     } elseif ($application_status == "Rejected") {
         $btnApply = "";
+    } else {
+        $btnApply = "";
     }
     $msg = "show";
 } else {
     $btnApply = "";
     $msg = "";
 }
-
-
 
 if (isset($_POST["apply_job"]) && $msg == "") {
     $bid = test_input($_POST["bid"]);
@@ -91,14 +104,19 @@ if (isset($_POST["apply_job"]) && $msg == "") {
     }
 }
 
-if (isset($_POST["fav"])) {
-    $sql = "INSERT INTO freelancer_fav(f_username, job_id) VALUES ('$username', '$job_id')";
-    $result = $conn->query($sql);
-}
-
 if (isset($_POST["view"])) {
     $_SESSION["client_profile"] = $c_username;
-    header("location: pages-profile.php");
+    header("location: pages-profileClient.php");
+}
+
+if (isset($_POST["delete"])) {
+    $username = test_input($_POST["f_username"]);
+    $job_id = test_input($_POST["job_id"]);
+
+    $sql = "DELETE FROM job_application WHERE f_username='$username' and job_id='$job_id'";
+    $result = $conn->query($sql);
+
+    header("location: pages-jobDetails.php");
 }
 
 $sql6 = "SELECT * FROM review JOIN freelancer ON review.f_username=freelancer.username WHERE c_username='$c_username' AND review_type='f-c'";
@@ -121,6 +139,28 @@ if ($result6->num_rows > 0) {
 } else {
 }
 
+if (isset($_POST["fav"])) {
+    $job_id = $_POST["job_id"];
+    $username = $_POST["f_username"];
+
+    $sql7 = "SELECT * FROM freelancer_fav WHERE job_id='$job_id' and f_username='$username'";
+    $result7 = $conn->query($sql7);
+
+    if ($result7->num_rows > 0) {
+        $sql = "DELETE FROM freelancer_fav WHERE job_id='$job_id' and f_username='$username'";
+        $result = $conn->query($sql);
+        if ($result == true) {
+            header("location: pages-jobDetails.php");
+        }
+    } else {
+        $sql = "INSERT INTO freelancer_fav(f_username, job_id) VALUES ('$username', '$job_id')";
+        $result = $conn->query($sql);
+        if ($result == true) {
+            header("location: pages-jobDetails.php");
+        }
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -134,13 +174,14 @@ if ($result6->num_rows > 0) {
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.min.js" integrity="sha384-ODmDIVzN+pFdexxHEHFBQH3/9/vQ9uori45z4JjnFsRydbmQbmL5t1tQ0culUzyK" crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/915317e5b1.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 </head>
 
 <body>
     <?php
     if (isset($_SESSION["Username"])) {
         include "sidebar/sidebar.php";
-        himeSidebar($linkDashboard, $linkSearch, $textSearch, $postJob);
+        himeSidebar($linkDashboard, $linkSearch, $linkProfile, $textSearch, $postJob, $profile_name);
     } else {
         include "sidebar/sidebar2.php";
         himeSidebar();
@@ -152,11 +193,12 @@ if ($result6->num_rows > 0) {
             <div class="row">
                 <div class="col-3">
                     <div class="row mx-2">
-                        <div class="card pt-5 border-0">
+                        <div class="card py-5 border-0">
                             <img src="sidebar/img/face-1.png" class="card-img-top rounded-circle mx-auto mb-3" style="width:40%;" alt="">
                             <div class="card-body">
                                 <h3 class="card-title text-center"><span class="fw-semibold"><?php echo $c_name ?></span></h3>
-                                <button type="button" class="btn btn-sm d-flex bg-success justify-content-center align-items-center col-3 mx-auto text-white py-1"><i class="fa-solid fa-star"></i>&nbsp&nbsp
+                                <button type="button" class="btn btn-sm d-flex bg-success justify-content-center align-items-center col-4 mx-auto text-white py-1">
+                                    <i class="fa-solid fa-star me-2"></i>
                                     <?php
                                     if ($result6->num_rows > 0) {
                                         $avrg = array_sum($rating) / $cnt_review;
@@ -164,14 +206,15 @@ if ($result6->num_rows > 0) {
                                     } else {
                                         echo '0';
                                     }
-                                    ?></button>
+                                    ?>
+                                </button>
                                 <p class="card-text text-center mt-4"><?php echo $c_desc ?></p>
                                 <div class="row mt-5">
                                     <form method="post">
                                         <input type="hidden" name="c_username" value="<?php echo $c_username; ?>">
                                         <div class="row">
                                             <div class="col">
-                                                <button type="submit" class="btn btn-light w-100" name="message">Message</button>
+                                                <button type="button" class="btn btn-light w-100" onClick="window.open(`message/login.php`);">Message</button>
                                             </div>
                                             <div class="col">
                                                 <button type="submit" class="btn btn-primary w-100" name="view">View</button>
@@ -184,11 +227,38 @@ if ($result6->num_rows > 0) {
                     </div>
                 </div>
                 <div class="col px-5">
+
+                    <div class="row">
+                        <div class="col">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="http://localhost/himev2/pages-searchJob.php">Search</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page"><?php echo $title ?></li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <div class="col-3 mb-3 p-0">
+                            <?php
+                            if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
+                                $url = "https://";
+                            else
+                                $url = "http://";
+
+                            $url .= $_SERVER['HTTP_HOST'];
+                            $url .= $_SERVER['REQUEST_URI'];
+                            ?>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm" value="<?php echo $url ?>" id="myInput">
+                                <button class="btn btn-sm btn-primary px-4" onclick="myFunction()"><i class="fa-solid fa-share me-3"></i>Share</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <?php if ($msg == "show") {
                             if ($application_status == "Applied") {
                                 echo '<div class="alert alert-danger" role="alert">
-                                    <i class="fa-solid fa-circle-exclamation me-2"></i> You have already applied for this job. You cannot apply again.                 
+                                    <i class="fa-solid fa-circle-exclamation me-2"></i> You have already applied for this job. You may withdraw your application.                 
                                 </div>';
                             } elseif ($application_status == "Rejected") {
                                 echo '<div class="alert alert-danger" role="alert">
@@ -224,11 +294,18 @@ if ($result6->num_rows > 0) {
                                     <div class="col">
                                         <h2><?php echo $title ?></h2>
                                         <p class="text-secondary mb-0"><?php
-                                                                        $now = time();
-                                                                        $your_date = strtotime($date_created);
-                                                                        $datediff = $now - $your_date;
+                                                                        date_default_timezone_set("Asia/Kuala_Lumpur");
+                                                                        $date_today = date("Y-m-d");
 
-                                                                        echo 'Posted ' . round($datediff / (60 * 60 * 24)) . ' days ago';
+                                                                        if ($date_created == ($date_today)) {
+                                                                            echo 'Posted Today';
+                                                                        } else {
+                                                                            $now = time();
+                                                                            $your_date = strtotime($date_created);
+                                                                            $datediff = $now - $your_date;
+
+                                                                            echo 'Posted ' . round($datediff / (60 * 60 * 24)) . ' days ago';
+                                                                        }
                                                                         ?>
                                         </p>
                                     </div>
@@ -236,14 +313,27 @@ if ($result6->num_rows > 0) {
                                         <?php
                                         if ($btn == "") {
                                             if ($job_status == "available") {
-                                                echo '<button class="btn btn-primary py-2 col-8" type="button" data-bs-toggle="modal" data-bs-target="#applyModal" ' . $btnApply . '>Apply Now</button>
-                                                        <form method="post">
-                                                            <input type="hidden" name="f_username" value="' . $username . '">
-                                                            <input type="hidden" name="job_id" value="' . $job_id . '">
-                                                            <button class="btn btn-link py-2 ms-1" type="submit" name="fav">
-                                                                <i class="fa-regular fa-heart fa-xl" style="color:red"></i>
-                                                            </button>
-                                                        </form>';
+                                                echo '<form method="post">
+                                                <input type="hidden" name="f_username" value="' . $username . '">
+                                                <input type="hidden" name="job_id" value="' . $job_id . '">'; ?>
+                                                <?php
+                                                $sql = "SELECT * FROM freelancer_fav WHERE job_id='$job_id' and f_username='$username'";
+                                                $result = $conn->query($sql);
+                                                if ($result->num_rows > 0) {
+                                                    echo '<button type="submit" name="fav" class="btn" style="background-color:#f28482"><i class="fa-solid fa-bookmark" style="color:#fff"></i></button>';
+                                                } else {
+                                                    echo '<button type="submit" name="fav" class="btn btn-light"><i class="fa-solid fa-bookmark" style="color:#adb5bd"></i></button>';
+                                                }
+                                                ?>
+                                                <?php
+                                                if ($application_status == "Applied") {
+                                                    echo '<button class="btn btn-danger py-2 col" type="submit" name="delete">Withdaw Application</button>
+                                                </form>';
+                                                } else {
+                                                    echo '<button class="btn btn-primary py-2 px-5 col" type="button" data-bs-toggle="modal" data-bs-target="#applyModal" ' . $btnApply . '>Apply</button>';
+                                                }
+                                                ?>
+                                        <?php echo '';
                                             } else {
                                                 echo '';
                                             }
@@ -286,8 +376,8 @@ if ($result6->num_rows > 0) {
                             <h4 class="mb-4">Skills And Expertise</h4>
                         </div>
                         <p>
-                            <button type="button" class="btn btn-primary rounded-pill px-4"><?php echo $category ?></button>
-                            <button type="button" class="btn btn-primary rounded-pill px-4"><?php echo $language ?></button>
+                            <button type="button" class="btn rounded-pill px-4 text-white" style="background-color:#f4a261;"><?php echo $category ?></button>
+                            <button type="button" class="btn rounded-pill px-4 text-white" style="background-color:#2a9d8f;"><?php echo $language ?></button>
                         </p>
                     </div>
 
@@ -301,7 +391,7 @@ if ($result6->num_rows > 0) {
                             </div>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
@@ -337,5 +427,15 @@ if ($result6->num_rows > 0) {
         </div>
     </div>
 </div>
+
+<script>
+    function myFunction() {
+        var copyText = document.getElementById("myInput");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
+        alert("Copied the url: " + copyText.value);
+    }
+</script>
 
 </html>

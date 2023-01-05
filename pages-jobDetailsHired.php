@@ -3,16 +3,32 @@
 if (isset($_SESSION["Username"])) {
     $username = $_SESSION["Username"];
     if ($_SESSION["Usertype"] == 1) {
+        $sql = "SELECT first_name FROM freelancer WHERE username='$username'";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $profile_name = $row["first_name"];
+            }
+        }
         $textSearch = "Find Job";
         $linkSearch = "pages-searchJob.php";
         $linkDashboard = "dashboard-freelancer.php";
+        $linkProfile = "pages-profileFreelancer.php";
         $postJob = "hidden";
         $btn = "hidden";
         $completeText = "Request Payment";
     } else {
+        $sql = "SELECT first_name FROM client WHERE username='$username'";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $profile_name = $row["first_name"];
+            }
+        }
         $textSearch = "Find Freelancer";
         $linkSearch = "pages-searchFreelancer.php";
         $linkDashboard = "dashboard-client.php";
+        $linkProfile = "pages-profileClient.php";
         $postJob = "";
         $btn = "";
         $completeText = "Release Payment";
@@ -172,6 +188,15 @@ if ($result7->num_rows > 0) {
 } else {
 }
 
+if (isset($_POST["viewC"])) {
+    $_SESSION["client_profile"] = $c_username;
+    header("location: pages-profileClient.php");
+}
+
+if (isset($_POST["viewF"])) {
+    $_SESSION["freelancer_profile"] = $f_username;
+    header("location: pages-profileFreelancer.php");
+}
 
 ?>
 
@@ -241,7 +266,7 @@ if ($result7->num_rows > 0) {
 <body>
     <?php
     include "sidebar/sidebar.php";
-    himeSidebar($linkDashboard, $linkSearch, $textSearch, $postJob)
+    himeSidebar($linkDashboard, $linkSearch, $linkProfile, $textSearch, $postJob, $profile_name);
     ?>
 
     <main class="my-4">
@@ -258,31 +283,31 @@ if ($result7->num_rows > 0) {
                     </div>
                     <div class="card mt-3 py-2 border-0">
                         <div class="card-body">
-                            <div class="row mx-auto">
+                            <div class="row d-flex justify-content-center align-items-center">
                                 <div class="col-auto d-flex justify-content-start align-items-center">
-                                    <button type="button" class="btn btn-success btn-circle mx-2"><i class="fa-solid fa-pen"></i></button><span class="mx-4 fw-semibold">Offer</span><i class="fa-solid fa-chevron-right mx-4"></i>
+                                    <button type="button" class="btn btn-success btn-circle mx-1"><i class="fa-solid fa-pen"></i></button><span class="mx-2 fw-semibold">Offer</span><i class="fa-solid fa-chevron-right mx-4"></i>
                                 </div>
-                                <div class="col-auto  d-flex justify-content-start align-items-center">
-                                    <button type="button" class="btn btn-success btn-circle mx-2"><i class="fa-solid fa-wallet"></i></button><span class="mx-4 fw-semibold">Confirmation & Deposit</span><i class="fa-solid fa-chevron-right mx-4"></i>
+                                <div class="col-auto d-flex justify-content-start align-items-center">
+                                    <button type="button" class="btn btn-success btn-circle mx-1"><i class="fa-solid fa-wallet"></i></button><span class="mx-2 fw-semibold">Confirmation & Deposit</span><i class="fa-solid fa-chevron-right mx-4"></i>
                                 </div>
-                                <div class="col-auto  d-flex justify-content-start align-items-center">
+                                <div class="col-auto d-flex justify-content-start align-items-center">
                                     <?php if ($job_status == "completed") {
-                                        echo '<button type="button" class="btn btn-success btn-circle mx-2"><i class="fa-solid fa-hourglass-half"></i></button><span class="mx-4 fw-semibold">In progress</span><i class="fa-solid fa-chevron-right mx-4"></i>';
+                                        echo '<button type="button" class="btn btn-success btn-circle mx-1"><i class="fa-solid fa-hourglass-half"></i></button><span class="mx-2 fw-semibold">In progress</span><i class="fa-solid fa-chevron-right mx-4"></i>';
                                     } elseif ($job_status == "unavailable") {
-                                        echo '<button type="button" class="btn btn-primary btn-circle mx-2"><i class="fa-solid fa-hourglass-half"></i></button><span class="mx-4 fw-semibold text-primary">In progress</span><i class="fa-solid fa-chevron-right mx-4"></i>';
+                                        echo '<button type="button" class="btn btn-primary btn-circle mx-1"><i class="fa-solid fa-hourglass-half"></i></button><span class="mx-2 fw-semibold text-primary">In progress</span><i class="fa-solid fa-chevron-right mx-4"></i>';
                                     }
                                     ?>
                                 </div>
-                                <div class="col-auto  d-flex justify-content-start align-items-center">
+                                <div class="col-auto d-flex justify-content-start align-items-center">
                                     <?php
                                     if ($job_status == "completed") {
                                         if ($result3->num_rows > 0) {
-                                            echo '<button type="button" class="btn btn-success btn-circle mx-2"><i class="fa-solid fa-star"></i></button><span class="mx-4 fw-semibold">Review</span>';
+                                            echo '<button type="button" class="btn btn-success btn-circle mx-1"><i class="fa-solid fa-star"></i></button><span class="mx-2 fw-semibold">Review</span>';
                                         } else {
-                                            echo '<button type="button" class="btn btn-primary btn-circle mx-2"><i class="fa-solid fa-star"></i></button><span class="mx-4 fw-semibold text-primary">Review</span>';
+                                            echo '<button type="button" class="btn btn-primary btn-circle mx-1"><i class="fa-solid fa-star"></i></button><span class="mx-2 fw-semibold text-primary">Review</span>';
                                         }
                                     } elseif ($job_status == "unavailable") {
-                                        echo '<button type="button" class="btn btn-outline-secondary btn-circle mx-2"><i class="fa-solid fa-star"></i></button><span class="mx-4 text-secondary">Review</span>';
+                                        echo '<button type="button" class="btn btn-outline-secondary btn-circle mx-1"><i class="fa-solid fa-star"></i></button><span class="mx-2 text-secondary">Review</span>';
                                     }
                                     ?>
                                 </div>
@@ -526,10 +551,10 @@ if ($result7->num_rows > 0) {
                                     <input type="hidden" name="c_username" value="<?php echo $c_username; ?>">
                                     <div class="row">
                                         <div class="col p-1">
-                                            <button type="submit" class="btn btn-light w-100" name="message">Message</button>
+                                            <button type="submit" class="btn btn-light w-100" name="message" onClick="window.open('message/login.php');">Message</button>
                                         </div>
                                         <div class="col p-1">
-                                            <button type="submit" class="btn btn-primary w-100" name="view">View</button>
+                                            <button type="submit" class="btn btn-primary w-100" name="viewC">View</button>
                                         </div>
                                     </div>
                                 </form>
@@ -566,13 +591,13 @@ if ($result7->num_rows > 0) {
                             </div>
                             <div class="row mt-4">
                                 <form method="post">
-                                    <input type="hidden" name="c_username" value="<?php echo $f_username; ?>">
+                                    <input type="hidden" name="f_username" value="<?php echo $f_username; ?>">
                                     <div class="row">
                                         <div class="col p-1">
-                                            <button type="submit" class="btn btn-light w-100" name="message">Message</button>
+                                            <button type="submit" class="btn btn-light w-100" name="message" onClick="window.open('message/login.php');">Message</button>
                                         </div>
                                         <div class="col p-1">
-                                            <button type="submit" class="btn btn-primary w-100" name="view">View</button>
+                                            <button type="submit" class="btn btn-primary w-100" name="viewF">View</button>
                                         </div>
                                     </div>
                                 </form>
